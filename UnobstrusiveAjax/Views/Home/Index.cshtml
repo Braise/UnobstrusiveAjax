@@ -1,0 +1,142 @@
+﻿@section Scripts{
+    <script>
+        function IndividuVM()
+        {
+            this.nam = ko.observable();
+            this.lastName = ko.observable();
+            this.firstName = ko.observable();
+        }
+
+        function membreVM()
+        {
+            this.nam = ko.observable();
+            this.ajouterMembre = ko.observable(false);
+            this.individu = ko.observable(new IndividuVM());
+        }
+
+        var projetVM = function ()
+        {
+            var self = this;
+            self.membres = ko.observableArray();
+
+            self.membres.push(new membreVM());
+            self.membres.push(new membreVM());
+
+            self.CreerProjet = function () {
+                var membresProjet = [];
+
+                for (i = 0; i < self.membres().length; i++) {
+                    if (self.membres()[i].nam()) {
+                        membresProjet.push({
+                            Nam: self.membres()[i].nam,
+                            Individu:
+                            {
+                                Nam: self.membres()[i].individu().nam,
+                                LastName: self.membres()[i].individu().lastName,
+                                FirstName: self.membres()[i].individu().firstName
+                            }
+                        });
+                    }
+                }
+
+                $.ajax("/home/AjouterProjet", {
+                    type: "POST",
+                    data:
+                    {
+                        model: membresProjet
+                    },
+                    success: function (result) {
+                        alert('Projet ajouté :)');
+                    }
+                });
+            }
+        }
+
+        function afficherFormulaireAjoutMembre(data, event)
+        {
+            data.ajouterMembre(true);
+        }
+
+        function rechercherIndividu(data, event) {
+            $.ajax("/home/AjouterMembre", {
+                type: "POST",
+                data: { nam: data.nam},
+                success: function (result) {
+                    data.individu().nam(result.Nam);
+                    data.individu().lastName(result.LastName);
+                    data.individu().firstName(result.FirstName);
+
+                    console.log(data.individu);
+                }
+            });
+        }
+
+        function reinitialiserIndividu(data, event) {
+            data.individu().nam("");
+            data.individu().lastName("");
+            data.individu().firstName("");
+        }
+
+        $(document).ready(function () {
+            var projet = new projetVM();
+
+            ko.applyBindings(projet);
+        });
+    </script>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Projet de procréation Médicalement assisté</h2>
+    </div>
+    <div class="card-body">
+        <div class="row mt-6" data-bind="foreach: membres">
+            <div class="col-md-6" >
+                <div class="card">
+                    <div data-bind="if: !individu().nam()">
+                        <div data-bind="visible: !ajouterMembre()" class="text-center justify-content-center my-5">
+                            <i data-bind="click: afficherFormulaireAjoutMembre" class="fa fa-plus-circle" aria-hidden="true"></i>
+                        </div>
+
+                        <div data-bind="visible: ajouterMembre()">
+                            <div class="card-body">
+                                <div class="row mt-3">
+                                    <input data-bind="value: nam" type="text" />
+                                </div>
+                                <div class="row mt-3">
+                                    <button class="btn btn-primary" data-bind="click: rechercherIndividu">Rechercher</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-bind=" if: individu().nam()">
+                        <div class="card-body">
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <input data-bind="value: individu().nam" type="text" disabled/>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn btn-danger" data-bind="click: reinitialiserIndividu">Réinitialiser</button>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-3">
+                                    <span data-bind="text: individu().firstName"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <span data-bind="text: individu().lastName"></span>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div data-bind="if: membres()[0].individu().nam() ||membres()[1].individu().nam()">
+            <button class="btn btn-primary" data-bind="click: CreerProjet, val">Creer projet</button>
+        </div>
+    </div>
+</div>

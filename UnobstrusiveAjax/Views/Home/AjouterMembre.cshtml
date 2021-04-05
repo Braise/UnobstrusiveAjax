@@ -1,0 +1,84 @@
+﻿@model UnobstrusiveAjax.ViewModel.ValidationMembreViewModel
+
+@section Scripts{
+    <script>
+        var model =
+        {
+            nam: ko.observable(),
+            individu:
+            {
+                nam: ko.observable(),
+                firstName: ko.observable(),
+                lastName: ko.observable()
+            }
+        }
+
+        $(document).ready(function () {
+            ko.applyBindings(model);
+        });
+    </script>
+}
+
+@{
+    var uniqueId = Guid.NewGuid().ToString().Replace("-", string.Empty);
+}
+
+<div id=@uniqueId>
+    <div class="card">
+        @if (Model.Individu == null)
+        {
+            <div id=@($"iconeAjouterMembre{uniqueId}") class="text-center justify-content-center my-5">
+                <i class="fa fa-plus-circle" aria-hidden="true" onclick="AfficherFormulaireAJoutMembre('@($"iconeAjouterMembre{uniqueId}")', '@($"formAjouterMembre{uniqueId}")')"></i>
+            </div>
+
+            <div id=@($"formAjouterMembre{uniqueId}") style="display:none">
+                <div class="card-body">
+                    <div class="row mt-3">
+                        <input id=@($"namNouveauMembre{uniqueId}") data-bind="value: model.nam" type="text" />
+                    </div>
+                    <div class="row mt-3">
+                        <button class="btn btn-primary" data-bind="click: ajouterMembre">Rechercher</button>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card-body">
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <input id=@($"namNouveauMembre{uniqueId}") data-bind="value: model.nam" type="text" />
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-danger">Réinitialiser</button>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <input data-bind="value: model.individu.firstName" type="text" />
+                    </div>
+                    <div class="col-md-3">
+                        <input data-bind="value: model.individu.lastName" type="text" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $("@($"#boutonAjouterMembre{uniqueId}")").click(function (e) {
+            e.preventDefault();
+
+            var nam = $("@($"#namNouveauMembre{uniqueId}")").val();
+            var data = {nam: nam}
+            $.post("/home/AjouterMembre", data, function (data)
+            {
+                $("@($"#{uniqueId}")").replaceWith(data);
+            });
+
+            return false;
+        });
+    });
+</script>
